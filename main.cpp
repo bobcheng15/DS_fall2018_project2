@@ -3,6 +3,7 @@
 #include <string>
 #include <queue>
 #include <stack>
+#include <deque>
 
 class cell{
 public:
@@ -65,10 +66,12 @@ void find_distance(cell * map, const int & row, const int & column, const int & 
     }
 
 }
-void shortest_path(std::stack<pair> & result, cell * map, const int & row, const int & column, const int & src_row, const int & src_col, const int & dest_row, const int & dest_col){
+void shortest_path(std::deque<pair> & result, cell * map, const int & row, const int & column, const int & src_row, const int & src_col, const int & dest_row, const int & dest_col){
     pair cur_cell = pair(src_row, src_col);
     int distance = map[cur_cell.row_idx * column + cur_cell.col_idx].distance;
+    result.push_back(cur_cell);
     while (cur_cell.row_idx != dest_row && cur_cell.col_idx != dest_col){
+        //std::cout << cur_cell.row_idx << " " << cur_cell.col_idx << '\n';
         bool found = false;
         pair result_cell = pair(0 , 0);
         if (!found && map[(cur_cell.row_idx - 1) * column + cur_cell.col_idx].distance == distance - 1){
@@ -76,6 +79,8 @@ void shortest_path(std::stack<pair> & result, cell * map, const int & row, const
             result_cell.col_idx = cur_cell.col_idx;
             if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
                 found = true;
+                map[result_cell.row_idx * column + result_cell.col_idx].cleaned = true;
+
             }
         }
         if (!found && map[(cur_cell.row_idx + 1) * column + cur_cell.col_idx].distance == distance - 1){
@@ -83,6 +88,7 @@ void shortest_path(std::stack<pair> & result, cell * map, const int & row, const
             result_cell.col_idx = cur_cell.col_idx;
             if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
                 found = true;
+                map[result_cell.row_idx * column + result_cell.col_idx].cleaned = true;
             }
         }
         if (!found && map[cur_cell.row_idx * column + cur_cell.col_idx + 1].distance == distance - 1){
@@ -90,6 +96,7 @@ void shortest_path(std::stack<pair> & result, cell * map, const int & row, const
             result_cell.col_idx = cur_cell.col_idx + 1;
             if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
                 found = true;
+                map[result_cell.row_idx * column + result_cell.col_idx].cleaned = true;
             }
         }
         if (!found && map[cur_cell.row_idx * column + cur_cell.col_idx - 1].distance == distance - 1){
@@ -97,10 +104,14 @@ void shortest_path(std::stack<pair> & result, cell * map, const int & row, const
             result_cell.col_idx = cur_cell.col_idx - 1;
             if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
                 found = true;
+                map[result_cell.row_idx * column + result_cell.col_idx].cleaned = true;
             }
         }
-        result.push(result_cell);
+        cur_cell.row_idx = result_cell.row_idx;
+        cur_cell.col_idx = result_cell.col_idx;
+        result.push_back(result_cell);
     }
+    result.push_back(pair(dest_row, dest_col));
 }
 
 
@@ -115,17 +126,43 @@ int main(void){
     std::cout << row << " " << column << " " << battery << '\n';
     read_map(&map[0][0], row, column, R_row, R_col);
     find_distance(&map[0][0], row, column, R_row, R_col);
+    std::queue<pair> result;
     for (int i = 0; i < row; i ++){
         for (int j = 0; j < column; j ++){
-            std::cout << map[i][j].type << ' ';
+            if (map[i][j].type == '0' && map[i][j].cleaned == false){
+                std::cout << i << " " << j << '\n';
+                std::deque<pair> tmp_result;
+                shortest_path(tmp_result, &map[0][0], row, column, i, j, R_row, R_col);
+
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.back());
+                    tmp_result.pop_back();
+                }
+                tmp_result.pop_front();
+                shortest_path(tmp_result, &map[0][0], row, column, i, j, R_row, R_col);
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.front());
+                    tmp_result.pop_front();
+                }
+            }
         }
-        std::cout << '\n';
     }
-    for (int i = 0; i < row; i ++){
-        for (int j = 0; j < column; j ++){
-            std::cout << map[i][j].distance << ' ';
-        }
-        std::cout << '\n';
+    std::cout << result.size() << '\n';
+    while (!result.empty()){
+        std::cout << result.front().row_idx << " " << result.front().col_idx << '\n';
+        result.pop();
     }
+    // for (int i = 0; i < row; i ++){
+    //     for (int j = 0; j < column; j ++){
+    //         std::cout << map[i][j].type << ' ';
+    //     }
+    //     std::cout << '\n';
+    // }
+    // for (int i = 0; i < row; i ++){
+    //     for (int j = 0; j < column; j ++){
+    //         std::cout << map[i][j].distance << ' ';
+    //     }
+    //     std::cout << '\n';
+    // }
     return 0;
 }
