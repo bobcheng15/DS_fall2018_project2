@@ -19,6 +19,7 @@ public:
     int row_idx;
     int col_idx;
 };
+
 void read_map(cell * map, const int & row, const int & column, int & R_row, int & R_col){
     for (int i = 0; i < row; i ++){
         for (int j = 0; j < column; j ++){
@@ -33,8 +34,8 @@ void read_map(cell * map, const int & row, const int & column, int & R_row, int 
     }
 }
 bool isValid(cell * map, const int & row, const int & column, const int & row_idx, const int & col_idx){
-    return (map[row_idx * column + col_idx].type != '1') && (map[row_idx * column + col_idx].type != '1') &&
-           (row_idx < row) && (row_idx > 0) && (col_idx < column) && (col_idx > 0);
+    return (map[row_idx * column + col_idx].type != '1') && (map[row_idx * column + col_idx].type != 'R') &&
+           (row_idx < row) && (row_idx >= 0) && (col_idx < column) && (col_idx >= 0);
 }
 void find_distance(cell * map, const int & row, const int & column, const int & R_row, const int & R_col){
     std::queue<pair> q;
@@ -42,11 +43,12 @@ void find_distance(cell * map, const int & row, const int & column, const int & 
     map[R_row * column + R_col].distance = 0;
     while(!q.empty()){
         pair v = q.front();
-        int distance = map[v.row_idx * column + v.col_idx].distance + 1; 
+        int distance = map[v.row_idx * column + v.col_idx].distance + 1;
         q.pop();
         if (isValid(map, row, column, v.row_idx + 1, v.col_idx) && map[(v.row_idx + 1) * column + v.col_idx].distance == -1){
             q.push(pair(v.row_idx + 1, v.col_idx));
             map[(v.row_idx + 1) * column + v.col_idx].distance = distance;
+            std::cout << v.row_idx + 1 << " " << v.col_idx << '\n';
         }
         if (isValid(map, row, column, v.row_idx - 1, v.col_idx) && map[(v.row_idx - 1) * column + v.col_idx].distance == -1){
             q.push(pair(v.row_idx - 1, v.col_idx));
@@ -63,6 +65,45 @@ void find_distance(cell * map, const int & row, const int & column, const int & 
     }
 
 }
+void shortest_path(std::stack<pair> & result, cell * map, const int & row, const int & column, const int & src_row, const int & src_col, const int & dest_row, const int & dest_col){
+    pair cur_cell = pair(src_row, src_col);
+    int distance = map[cur_cell.row_idx * column + cur_cell.col_idx].distance;
+    while (cur_cell.row_idx != dest_row && cur_cell.col_idx != dest_col){
+        bool found = false;
+        pair result_cell = pair(0 , 0);
+        if (!found && map[(cur_cell.row_idx - 1) * column + cur_cell.col_idx].distance == distance - 1){
+            result_cell.row_idx = cur_cell.row_idx - 1;
+            result_cell.col_idx = cur_cell.col_idx;
+            if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
+                found = true;
+            }
+        }
+        if (!found && map[(cur_cell.row_idx + 1) * column + cur_cell.col_idx].distance == distance - 1){
+            result_cell.row_idx = cur_cell.row_idx + 1;
+            result_cell.col_idx = cur_cell.col_idx;
+            if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
+                found = true;
+            }
+        }
+        if (!found && map[cur_cell.row_idx * column + cur_cell.col_idx + 1].distance == distance - 1){
+            result_cell.row_idx = cur_cell.row_idx;
+            result_cell.col_idx = cur_cell.col_idx + 1;
+            if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
+                found = true;
+            }
+        }
+        if (!found && map[cur_cell.row_idx * column + cur_cell.col_idx - 1].distance == distance - 1){
+            result_cell.row_idx = cur_cell.row_idx;
+            result_cell.col_idx = cur_cell.col_idx - 1;
+            if (map[result_cell.row_idx * column + result_cell.col_idx].cleaned == false){
+                found = true;
+            }
+        }
+        result.push(result_cell);
+    }
+}
+
+
 
 int main(void){
     int row, column, battery;
