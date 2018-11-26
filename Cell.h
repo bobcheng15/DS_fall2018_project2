@@ -1,12 +1,19 @@
 #ifndef CELL_H_INCLUDED
 #define CELL_H_INCLUDED
-class cell{
+#include "Pair.h"
+class Cell{
 public:
-
+    Cell(const char & input){
+        type = input;
+        cleaned = false;
+        distance = -1;
+        dest_distance = -1;
+        dest_pair = new Pair(- 1, -1);
+    }
     char type;
     bool cleaned;
     int distance;
     int dest_distance;
-    pair dest_pair;
+    Pair * dest_pair;
 };
 #endif
