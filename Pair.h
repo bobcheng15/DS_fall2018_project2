@@ -6,7 +6,6 @@ public:
         row_idx = row;
         col_idx = col;
     }
-    
     bool operator ==(const Pair & input){
         return (input.row_idx == row_idx) && (input.col_idx == col_idx);
     }
