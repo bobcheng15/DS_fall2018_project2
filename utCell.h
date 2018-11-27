@@ -8,7 +8,7 @@ TEST(Cell, testCellConstructor){
     EXPECT_EQ(test.cleaned, false);
     EXPECT_EQ(test.distance, -1);
     EXPECT_EQ(test.dest_distance, -1);
-    EXPECT_TRUE(*(test.dest_pair) == Pair(-1, -1));
+    EXPECT_TRUE(*(test.src_pair) == Pair(-1, -1));
 }
 
 
