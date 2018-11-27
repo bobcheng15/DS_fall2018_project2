@@ -28,6 +28,26 @@ public:
             }
         }
     }
+    bool isValid(const int & row_idx, const int & col_idx){
+               if((row_idx < row) && (row_idx >= 0) && (col_idx < column) && (col_idx >= 0)){
+                   if ((map[row_idx][col_idx].type != '1') && (map[row_idx][col_idx].type != 'R')){
+                       return true;
+                   }
+                   else{
+                       return false;
+                   }
+               }
+               else{
+                   return false;
+               }
+    }
+    ~Map(){
+        delete origin;
+        for (int i = 0; i < row; i ++){
+            delete [] map[i];
+        }
+        delete map;
+    }
     int row;
     int column;
     Pair *origin;

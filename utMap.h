@@ -12,8 +12,24 @@ TEST(Map, MapConstructor){
     EXPECT_TRUE(test.map[1][0].type == '1');
     EXPECT_TRUE(test.map[1][1].type == 'R');
     EXPECT_TRUE(*(test.origin) == Pair(1, 1));
+}
+
+TEST(Map, isValid){
+    Map test(2, 2);
+    char input[4] = {'1', '0', '0', 'R'};
+    test.read_map(input);
+    EXPECT_EQ(test.map[0][0].type, '1');
+    EXPECT_FALSE(test.isValid(0 , 0));
+    EXPECT_TRUE(test.isValid(0, 1));
+    EXPECT_TRUE(test.isValid(1, 0));
+    EXPECT_FALSE(test.isValid(1, 1));
+    EXPECT_FALSE(test.isValid(-1, 0));
+    EXPECT_FALSE(test.isValid(0, -1));
+    EXPECT_FALSE(test.isValid(-1, 1));
+    EXPECT_FALSE(test.isValid(0, 2));
 
 }
+
 
 
 
