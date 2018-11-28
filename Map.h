@@ -2,7 +2,11 @@
 #define MAP_H_INCLUDED
 #include "Cell.h"
 #include <queue>
-
+#define UNDEF 1
+#define UP 2
+#define DOWN 3
+#define LEFT 4
+#define RIGHT 5
 class Map{
 public:
     Map(const int & input_row, const int & input_column, const int & input_battery){
@@ -79,25 +83,25 @@ public:
             Pair v = q.front();
             int distance = map[v.row_idx][v.col_idx].dest_distance + 1;
             q.pop();
-            if (isValid(v.row_idx + 1, v.col_idx) && !(*map[v.row_idx + 1][v.col_idx].src_pair == v)){
+            if (isValid(v.row_idx + 1, v.col_idx) && !(*map[v.row_idx + 1][v.col_idx].src_pair == Pair(src_row, src_col))){
                 map[v.row_idx + 1][v.col_idx].src_pair->row_idx = src_row;
                 map[v.row_idx + 1][v.col_idx].src_pair->col_idx = src_col;
                 q.push(Pair(v.row_idx + 1, v.col_idx));
                 map[v.row_idx + 1][v.col_idx].dest_distance = distance;
             }
-            if (isValid(v.row_idx - 1, v.col_idx) && !(*map[v.row_idx - 1][v.col_idx].src_pair == v)){
+            if (isValid(v.row_idx - 1, v.col_idx) && !(*map[v.row_idx - 1][v.col_idx].src_pair == Pair(src_row, src_col))){
                 map[v.row_idx - 1][v.col_idx].src_pair->row_idx = src_row;
                 map[v.row_idx - 1][v.col_idx].src_pair->col_idx = src_col;
                 q.push(Pair(v.row_idx - 1, v.col_idx));
                 map[v.row_idx - 1][v.col_idx].dest_distance = distance;
             }
-            if (isValid(v.row_idx, v.col_idx - 1) && !(*map[v.row_idx][v.col_idx - 1].src_pair == v)){
+            if (isValid(v.row_idx, v.col_idx - 1) && !(*map[v.row_idx][v.col_idx - 1].src_pair == Pair(src_row, src_col))){
                 map[v.row_idx][v.col_idx - 1].src_pair->row_idx = src_row;
                 map[v.row_idx][v.col_idx - 1].src_pair->col_idx = src_col;
                 q.push(Pair(v.row_idx, v.col_idx - 1));
                 map[v.row_idx][v.col_idx - 1].dest_distance = distance;
             }
-            if (isValid(v.row_idx, v.col_idx + 1) && !(*map[v.row_idx][v.col_idx + 1].src_pair == v)){
+            if (isValid(v.row_idx, v.col_idx + 1) && !(*map[v.row_idx][v.col_idx + 1].src_pair == Pair(src_row, src_col))){
                 map[v.row_idx][v.col_idx + 1].src_pair->row_idx = src_row;
                 map[v.row_idx][v.col_idx + 1].src_pair->col_idx = src_col;
                 q.push(Pair(v.row_idx, v.col_idx + 1));
@@ -151,7 +155,64 @@ public:
             result.push_back(result_cell);
         }
     }
+    void shortest_path_to_dest(std::deque<Pair> & result, const int & dest_row, const int & dest_col){
+        Pair cur_cell = Pair(dest_col, dest_row);
+        while(map[cur_cell.row_idx][cur_cell.col_idx].dest_distance != 0){
+            int distance = map[cur_cell.row_idx][cur_cell.col_idx].dest_distance;
+            bool found = false;
+            Pair result_cell(-1, -1);
+            if (isValid(cur_cell.row_idx - 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx - 1][cur_cell.col_idx].dest_distance == distance - 1){
+                result_cell.row_idx = cur_cell.row_idx - 1;
+                result_cell.col_idx = cur_cell.col_idx;
+                if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
+                    found = true;
+                    map[result_cell.row_idx][result_cell.col_idx].cleaned = true;
 
+                }
+            }
+            if (isValid(cur_cell.row_idx + 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx + 1][cur_cell.col_idx].dest_distance == distance - 1){
+                result_cell.row_idx = cur_cell.row_idx + 1;
+                result_cell.col_idx = cur_cell.col_idx;
+                if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
+                    found = true;
+                    map[result_cell.row_idx][result_cell.col_idx].cleaned = true;
+                }
+            }
+            if (isValid(cur_cell.row_idx, cur_cell.col_idx + 1) && !found && map[cur_cell.row_idx][cur_cell.col_idx + 1].dest_distance == distance - 1){
+                result_cell.row_idx = cur_cell.row_idx;
+                result_cell.col_idx = cur_cell.col_idx + 1;
+                if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
+                    found = true;
+                    map[result_cell.row_idx][result_cell.col_idx].cleaned = true;
+                }
+            }
+            if (isValid(cur_cell.row_idx, cur_cell.col_idx - 1) && !found && map[cur_cell.row_idx][cur_cell.col_idx - 1].dest_distance == distance - 1){
+                result_cell.row_idx = cur_cell.row_idx;
+                result_cell.col_idx = cur_cell.col_idx - 1;
+                if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
+                    found = true;
+                    map[result_cell.row_idx][result_cell.col_idx].cleaned = true;
+                }
+            }
+            cur_cell.row_idx = result_cell.row_idx;
+            cur_cell.col_idx = result_cell.col_idx;
+            result.push_back(result_cell);
+        }
+    }
+    void detect_direction(const Pair & input){
+        if (input.row_idx == origin->row_idx - 1 && input.col_idx == origin->col_idx){
+            direction = UP;
+        }
+        else if (input.row_idx == origin->row_idx + 1 && input.col_idx == origin->col_idx){
+            direction = DOWN;
+        }
+        else if (input.row_idx == origin->row_idx && input.col_idx == origin->col_idx - 1){
+            direction = LEFT;
+        }
+        else if (input.row_idx == origin->row_idx && input.col_idx == origin->col_idx + 1){
+            direction = RIGHT;
+        }
+    }
     ~Map(){
         delete origin;
         for (int i = 0; i < row; i ++){
@@ -164,6 +225,7 @@ public:
     Pair *origin;
     Cell ** map;
     int battery;
+    int direction = UNDEF;
 };
 
 
