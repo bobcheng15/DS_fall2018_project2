@@ -153,6 +153,50 @@ TEST(Map, shortest_path_to_dest){
     EXPECT_TRUE(result.front() == Pair(1, 0));
     EXPECT_TRUE(test.map[result.front().row_idx][result.front().col_idx].cleaned == true);
     result.pop_front();
+}
+
+TEST(Map, detect_direction){
+    Map test(3, 3, 14);
+    char input[9] = {'0', '0', '0', '0', 'R', '0', '0', '0', '0'};
+    test.read_map(input);
+    EXPECT_EQ(test.direction, UNDEF);
+    Pair last_cell(0, 1);
+    test.detect_direction(last_cell);
+    EXPECT_EQ(test.direction, UP);
+    last_cell.row_idx = 2;
+    test.detect_direction(last_cell);
+    EXPECT_EQ(test.direction, DOWN);
+    last_cell.row_idx = 1;
+    last_cell.col_idx = 0;
+    test.detect_direction(last_cell);
+    EXPECT_EQ(test.direction, LEFT);
+    last_cell.col_idx = 2;
+    test.detect_direction(last_cell);
+    EXPECT_EQ(test.direction, RIGHT);
+}
+
+TEST(Map, path_finding_and_direction){
+    Map test(3, 3, 14);
+    char input[9] = {'0', '0', '0', '0', '0', '0', 'R', '0', '0'};
+    test.read_map(input);
+    test.find_distance();
+    int src_row = 1;
+    int src_col = 0;
+    int dest_row = 2;
+    int dest_col = 2;
+    test.find_distance_to_src(src_row, src_col);
+    std::deque<Pair> result;
+    test.shortest_path_to_dest(result, dest_row, dest_col);
+    EXPECT_EQ(result.size(), 3);
+    EXPECT_TRUE(result.front() == Pair(1, 2));
+    EXPECT_TRUE(test.map[result.front().row_idx][result.front().col_idx].cleaned == true);
+    result.pop_front();
+    EXPECT_TRUE(result.front() == Pair(1, 1));
+    EXPECT_TRUE(test.map[result.front().row_idx][result.front().col_idx].cleaned == true);
+    result.pop_front();
+    EXPECT_TRUE(result.front() == Pair(1, 0));
+    EXPECT_TRUE(test.map[result.front().row_idx][result.front().col_idx].cleaned == true);
+    result.pop_front();
     test.shortest_path_to_origin(result, dest_row, dest_col);
     EXPECT_EQ(result.size(), 2);
     EXPECT_TRUE(result.front() == Pair(2, 2));
@@ -161,18 +205,68 @@ TEST(Map, shortest_path_to_dest){
     EXPECT_TRUE(result.front() == Pair(2, 1));
     EXPECT_TRUE(test.map[result.front().row_idx][result.front().col_idx].cleaned == true);
     result.pop_front();
+    EXPECT_EQ(test.direction, RIGHT);
 }
 
-TEST(Map, detect_direction){
+TEST(Map, outgoing_cell){
     Map test(3, 3, 14);
-    char input[9] = {'0', '0', '0', '0', '0', '0', 'R', '0', '0'};
+    char input[9] = {'0', '0', '0', '0', 'R', '0', '0', '0', '0'};
     test.read_map(input);
-    EXPECT_EQ(test.direction, UNDEF);
-    Pair last_cell(1, 0);
-    test.detect_direction(last_cell);
-    EXPECT_EQ(test.direction, UP);
+    test.direction = UP;
+    Pair result = test.outgoing_cell();
+    EXPECT_TRUE(result == Pair(0, 1));
+    test.direction = DOWN;
+    result = test.outgoing_cell();
+    EXPECT_TRUE(result == Pair(2, 1));
+    test.direction = LEFT;
+    result = test.outgoing_cell();
+    EXPECT_TRUE(result == Pair(1, 0));
+    test.direction = RIGHT;
+    result = test.outgoing_cell();
+    EXPECT_TRUE(result == Pair(1, 2));
 }
 
+TEST(Map, valid_dest){
+    Map test(3, 3, 6);
+    char input[9] = {'0', '0', '0', '0', 'R', '0', '0', '0', '0'};
+    test.read_map(input);
+    int src_row = 0;
+    int src_col = 1;
+    int dest_row = 2;
+    int dest_col = 1;
+    test.find_distance_to_src(src_row, src_col);
+    EXPECT_FALSE(test.valid_dest(dest_row, dest_col));
+    dest_row = 1;
+    dest_col = 2;
+    EXPECT_TRUE(test.valid_dest(dest_row, dest_col));
+}
+
+TEST(Map, rotate){
+    Map test(3, 3, 6);
+    char input[9] = {'0', '0', '0', '0', 'R', '1', '0', '0', '0'};
+    test.read_map(input);
+    test.direction = UP;
+    int src_row = 0;
+    int src_col = 1;
+    test.find_distance_to_src(src_row, src_col);
+    EXPECT_TRUE(test.rotate(true) == Pair(-1, -1));
+    test.direction = UP;
+    EXPECT_TRUE(test.rotate(false) == Pair(1, 0));
+    src_row = 1;
+    src_col = 0;
+    test.direction = LEFT;
+    test.find_distance_to_src(src_row, src_col);
+    EXPECT_TRUE(test.rotate(true) == Pair(0, 1));
+    test.direction = LEFT;
+    EXPECT_TRUE(test.rotate(false) == Pair(2, 1));
+    src_row = 2;
+    src_col = 1;
+    test.direction = DOWN;
+    test.find_distance_to_src(src_row, src_col);
+    EXPECT_TRUE(test.rotate(true) == Pair(1, 0));
+    test.direction = DOWN;
+    EXPECT_TRUE(test.rotate(false) == Pair(-1, -1));
+}
 
 
 

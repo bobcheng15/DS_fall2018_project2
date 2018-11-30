@@ -109,7 +109,7 @@ public:
             }
         }
     }
-    void shortest_path_to_origin(std::deque<Pair> & result, int & src_row, const int & src_col){
+    void shortest_path_to_origin(std::deque<Pair> & result, const int & src_row, const int & src_col){
         Pair cur_cell = Pair(src_row, src_col);
         result.push_back(cur_cell);
         map[src_row][src_col].cleaned = true;
@@ -154,6 +154,7 @@ public:
             cur_cell.col_idx = result_cell.col_idx;
             result.push_back(result_cell);
         }
+        detect_direction(result.back());
     }
     void shortest_path_to_dest(std::deque<Pair> & result, const int & dest_row, const int & dest_col){
         Pair cur_cell = Pair(dest_col, dest_row);
@@ -213,6 +214,172 @@ public:
             direction = RIGHT;
         }
     }
+    Pair outgoing_cell(){
+        if (direction == UP){
+            return Pair(origin->row_idx - 1, origin->col_idx);
+        }
+        else if (direction == DOWN){
+            return Pair(origin->row_idx + 1, origin->col_idx);
+        }
+        else if (direction == LEFT){
+            return Pair(origin->row_idx, origin->col_idx - 1);
+        }
+        else if (direction == RIGHT){
+            return Pair(origin->row_idx, origin->col_idx + 1);
+        }
+        else{
+            return Pair(-1, -1);
+        }
+
+    }
+
+    bool valid_dest(const int & dest_row, const int & dest_col){
+        if (map[dest_row][dest_col].dest_distance * 2 > battery - 2){
+            return false;
+        }
+        else return true;
+    }
+    void change_outgoing_cell(std::queue<Pair> & result,const int & dest_row, const int & dest_col){
+        std::queue<Pair> rotate_result;
+        int cur_direction = direction;
+        bool found = false;
+        for (int i = 0; i < 3; i ++){
+            Pair new_src = rotate(true);
+            rotate_result.push(new_src);
+            if (new_src == Pair(-1, -1)){
+                break;
+            }
+            find_distance_to_src(new_src.row_idx, new_src.col_idx);
+            if (valid_dest(dest_row, dest_col)){
+                found = true;
+                break;
+            }
+        }
+        direction = cur_direction;
+        if (found){
+            while(!rotate_result.empty()){
+                std::deque<Pair> tmp_result;
+                Pair src = outgoing_cell();
+                find_distance_to_src(src.row_idx, src.col_idx);
+                shortest_path_to_dest(tmp_result, result.front().row_idx, result.front().col_idx);
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.front());
+                    tmp_result.pop_front();
+                }
+                shortest_path_to_origin(tmp_result, dest_row, dest_col);
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.front());
+                    tmp_result.pop_front();
+                }
+                result.push(Pair(origin->row_idx, origin->col_idx));
+                rotate_result.pop();
+            }
+        }
+        else{
+            direction = cur_direction;
+            while(!rotate_result.empty()) rotate_result.pop();
+        }
+        for (int i = 0; i < 3; i ++){
+            Pair new_src = rotate(false);
+            rotate_result.push(new_src);
+            if (new_src == Pair(-1, -1)){
+                break;
+            }
+            find_distance_to_src(new_src.row_idx, new_src.col_idx);
+            if (valid_dest(dest_row, dest_col)){
+                found = true;
+                break;
+            }
+        }
+        if (found){
+            while(!rotate_result.empty()){
+                std::deque<Pair> tmp_result;
+                Pair src = outgoing_cell();
+                find_distance_to_src(src.row_idx, src.col_idx);
+                shortest_path_to_dest(tmp_result, result.front().row_idx, result.front().col_idx);
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.front());
+                    tmp_result.pop_front();
+                }
+                shortest_path_to_origin(tmp_result, dest_row, dest_col);
+                while (!tmp_result.empty()){
+                    result.push(tmp_result.front());
+                    tmp_result.pop_front();
+                }
+                result.push(Pair(origin->row_idx, origin->col_idx));
+                rotate_result.pop();
+            }
+        }
+    }
+    Pair rotate(bool clockwise){
+        switch (direction) {
+            case UP:
+                if (clockwise){
+                    if (isValid(origin->row_idx, origin->col_idx + 1) && valid_dest(origin->row_idx, origin->col_idx + 1)){
+                        direction = RIGHT;
+                        return Pair(origin->row_idx, origin->col_idx + 1);
+                    }
+                    else return Pair(-1, -1);
+                }
+                else{
+                    if (isValid(origin->row_idx, origin->col_idx - 1) && valid_dest(origin->row_idx, origin->col_idx - 1)){
+                        direction = LEFT;
+                        return Pair(origin->row_idx, origin->col_idx - 1);
+                    }
+                    else return Pair(-1, -1);
+                }
+                break;
+            case DOWN:
+                if (clockwise){
+                    if (isValid(origin->row_idx, origin->col_idx - 1) && valid_dest(origin->row_idx, origin->col_idx - 1)){
+                        direction = LEFT;
+                        return Pair(origin->row_idx, origin->col_idx - 1);
+                    }
+                    else return Pair(-1, -1);
+                }
+                else{
+                    if (isValid(origin->row_idx, origin->col_idx + 1) && valid_dest(origin->row_idx, origin->col_idx + 1)){
+                        direction = RIGHT;
+                        return Pair(origin->row_idx, origin->col_idx + 1);
+                    }
+                    else return Pair(-1, -1);
+                }
+                break;
+            case LEFT:
+                if (clockwise){
+                    if (isValid(origin->row_idx - 1, origin->col_idx) && valid_dest(origin->row_idx - 1, origin->col_idx)){
+                        direction = UP;
+                        return Pair(origin->row_idx - 1, origin->col_idx);
+                    }
+                    else return Pair(-1, -1);
+                }
+                else{
+                    if (isValid(origin->row_idx + 1, origin->col_idx) && valid_dest(origin->row_idx + 1, origin->col_idx)){
+                        direction = DOWN;
+                        return Pair(origin->row_idx + 1, origin->col_idx);
+                    }
+                    else return Pair(-1, -1);
+                }
+            case RIGHT:
+                if (clockwise){
+                    if (isValid(origin->row_idx + 1, origin->col_idx) && valid_dest(origin->row_idx + 1, origin->col_idx)){
+                        direction = DOWN;
+                        return Pair(origin->row_idx + 1, origin->col_idx);
+                    }
+                    else return Pair(-1, -1);
+                }
+                else{
+                    if (isValid(origin->row_idx - 1, origin->col_idx) && valid_dest(origin->row_idx - 1, origin->col_idx)){
+                        direction = UP;
+                        return Pair(origin->row_idx - 1, origin->col_idx);
+                    }
+                    else return Pair(-1, -1);
+                }
+                break;
+            default:
+                return Pair(-1, -1);
+        }
+    }
     ~Map(){
         delete origin;
         for (int i = 0; i < row; i ++){
@@ -226,6 +393,7 @@ public:
     Cell ** map;
     int battery;
     int direction = UNDEF;
+
 };
 
 
