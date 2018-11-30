@@ -157,12 +157,14 @@ public:
         detect_direction(result.back());
     }
     void shortest_path_to_dest(std::deque<Pair> & result, const int & dest_row, const int & dest_col){
-        Pair cur_cell = Pair(dest_col, dest_row);
+        Pair cur_cell = Pair(dest_row, dest_col);
+
         while(map[cur_cell.row_idx][cur_cell.col_idx].dest_distance != 0){
             int distance = map[cur_cell.row_idx][cur_cell.col_idx].dest_distance;
             bool found = false;
             Pair result_cell(-1, -1);
             if (isValid(cur_cell.row_idx - 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx - 1][cur_cell.col_idx].dest_distance == distance - 1){
+                std::cout << cur_cell.row_idx - 1 << " " << cur_cell.col_idx << "\n";
                 result_cell.row_idx = cur_cell.row_idx - 1;
                 result_cell.col_idx = cur_cell.col_idx;
                 if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
@@ -172,6 +174,7 @@ public:
                 }
             }
             if (isValid(cur_cell.row_idx + 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx + 1][cur_cell.col_idx].dest_distance == distance - 1){
+                std::cout << "down " << cur_cell.row_idx + 1 << " " << cur_cell.col_idx << "\n";
                 result_cell.row_idx = cur_cell.row_idx + 1;
                 result_cell.col_idx = cur_cell.col_idx;
                 if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
@@ -234,7 +237,7 @@ public:
     }
 
     bool valid_dest(const int & dest_row, const int & dest_col){
-        if (map[dest_row][dest_col].dest_distance * 2 > battery - 2){
+        if (map[dest_row][dest_col].dest_distance + map[dest_row][dest_col].distance + 1 > battery){
             return false;
         }
         else return true;
@@ -244,9 +247,11 @@ public:
         int cur_direction = direction;
         bool found = false;
         for (int i = 0; i < 3; i ++){
+            std::cout << direction << "\n";
             Pair new_src = rotate(true);
             rotate_result.push(new_src);
             if (new_src == Pair(-1, -1)){
+                std::cout << "done\n";
                 break;
             }
             find_distance_to_src(new_src.row_idx, new_src.col_idx);
@@ -256,12 +261,19 @@ public:
             }
         }
         direction = cur_direction;
+        //std::cout << rotate_result.size() << '\n';
         if (found){
             while(!rotate_result.empty()){
+                std::cout << direction << '\n';
+                //std::cout << "done\n";
                 std::deque<Pair> tmp_result;
                 Pair src = outgoing_cell();
+                //std::cout << "done\n";
                 find_distance_to_src(src.row_idx, src.col_idx);
-                shortest_path_to_dest(tmp_result, result.front().row_idx, result.front().col_idx);
+                //std::cout << "done\n";
+                std::cout << src.row_idx << " " <<src.col_idx << '\n';
+                std::cout << rotate_result.front().row_idx << " " << rotate_result.front().col_idx << '\n';
+                shortest_path_to_dest(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                 while (!tmp_result.empty()){
                     result.push(tmp_result.front());
                     tmp_result.pop_front();
@@ -278,36 +290,37 @@ public:
         else{
             direction = cur_direction;
             while(!rotate_result.empty()) rotate_result.pop();
-        }
-        for (int i = 0; i < 3; i ++){
-            Pair new_src = rotate(false);
-            rotate_result.push(new_src);
-            if (new_src == Pair(-1, -1)){
-                break;
-            }
-            find_distance_to_src(new_src.row_idx, new_src.col_idx);
-            if (valid_dest(dest_row, dest_col)){
-                found = true;
-                break;
-            }
-        }
-        if (found){
-            while(!rotate_result.empty()){
-                std::deque<Pair> tmp_result;
-                Pair src = outgoing_cell();
-                find_distance_to_src(src.row_idx, src.col_idx);
-                shortest_path_to_dest(tmp_result, result.front().row_idx, result.front().col_idx);
-                while (!tmp_result.empty()){
-                    result.push(tmp_result.front());
-                    tmp_result.pop_front();
+            for (int i = 0; i < 3; i ++){
+                Pair new_src = rotate(false);
+                rotate_result.push(new_src);
+                if (new_src == Pair(-1, -1)){
+                    break;
                 }
-                shortest_path_to_origin(tmp_result, dest_row, dest_col);
-                while (!tmp_result.empty()){
-                    result.push(tmp_result.front());
-                    tmp_result.pop_front();
+                find_distance_to_src(new_src.row_idx, new_src.col_idx);
+                if (valid_dest(dest_row, dest_col)){
+                    found = true;
+                    break;
                 }
-                result.push(Pair(origin->row_idx, origin->col_idx));
-                rotate_result.pop();
+            }
+            std::cout << result.size() << '\n';
+            if (found){
+                while(!rotate_result.empty()){
+                    std::deque<Pair> tmp_result;
+                    Pair src = outgoing_cell();
+                    find_distance_to_src(src.row_idx, src.col_idx);
+                    shortest_path_to_dest(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
+                    while (!tmp_result.empty()){
+                        result.push(tmp_result.front());
+                        tmp_result.pop_front();
+                    }
+                    shortest_path_to_origin(tmp_result, dest_row, dest_col);
+                    while (!tmp_result.empty()){
+                        result.push(tmp_result.front());
+                        tmp_result.pop_front();
+                    }
+                    result.push(Pair(origin->row_idx, origin->col_idx));
+                    rotate_result.pop();
+                }
             }
         }
     }
