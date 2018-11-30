@@ -19,7 +19,7 @@ public:
         }
 
     }
-    void read_map(char * input){
+    void read_map(std::ifstream & input_file){
         int idx = 0;
         for (int i = 0; i < row; i ++){
             for (int j = 0; j < column; j ++){
@@ -270,7 +270,7 @@ public:
                 //std::cout << rotate_result.front().row_idx << " " << rotate_result.front().col_idx << '\n';
                 shortest_path_to_dest(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                 while (!tmp_result.empty()){
-                    std::cout << tmp_result.back().row_idx << " " <<tmp_result.back().col_idx << '\n';
+                    //std::cout << tmp_result.back().row_idx << " " <<tmp_result.back().col_idx << '\n';
                     result.push(tmp_result.back());
                     tmp_result.pop_back();
                 }
@@ -285,7 +285,9 @@ public:
             }
         }
         else{
+            //std::cout << "enter" << '\n';
             direction = cur_direction;
+            //std::cout << direction << '\n';
             while(!rotate_result.empty()) rotate_result.pop();
             for (int i = 0; i < 3; i ++){
                 Pair new_src = rotate(false);
@@ -294,25 +296,30 @@ public:
                     break;
                 }
                 find_distance_to_src(new_src.row_idx, new_src.col_idx);
+                //std::cout << "now " << new_src.row_idx << " " << new_src.col_idx << '\n';
+                //std::cout << map[dest_row][dest_col].dest_distance << "\n";
+
                 if (valid_dest(dest_row, dest_col)){
                     found = true;
                     break;
                 }
             }
             if (found){
+                direction = cur_direction;
                 while(!rotate_result.empty()){
                     std::deque<Pair> tmp_result;
                     Pair src = outgoing_cell();
                     find_distance_to_src(src.row_idx, src.col_idx);
                     shortest_path_to_dest(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                     while (!tmp_result.empty()){
-                        result.push(tmp_result.front());
-                        tmp_result.pop_front();
+
+                        result.push(tmp_result.back());
+                        tmp_result.pop_back();
                     }
-                    shortest_path_to_origin(tmp_result, dest_row, dest_col);
+                    shortest_path_to_origin(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                     while (!tmp_result.empty()){
-                        result.push(tmp_result.front());
-                        tmp_result.pop_front();
+                        result.push(tmp_result.back());
+                        tmp_result.pop_back();
                     }
                     result.push(Pair(origin->row_idx, origin->col_idx));
                     rotate_result.pop();

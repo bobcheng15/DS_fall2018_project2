@@ -310,7 +310,6 @@ TEST(Map, change_outgoing_cell){
     int dest_row = 2;
     int dest_col = 0;
     test.change_outgoing_cell(result, dest_row, dest_col);
-    std::cout << result.size() << '\n';
     EXPECT_EQ(result.size(), 8);
     EXPECT_TRUE(result.front() == Pair(0, 1));
     result.pop();
@@ -326,6 +325,35 @@ TEST(Map, change_outgoing_cell){
     result.pop();
     EXPECT_TRUE(result.front() == Pair(2, 1));
     result.pop();
+    EXPECT_TRUE(result.front() == Pair(1, 1));
+    result.pop();
+}
+
+TEST(Map, change_outgoing_cell2){
+    Map test(3, 3, 4);
+    char input[9] = {'0', '0', '0', '0', 'R', '1', '0', '0', '0'};
+    test.read_map(input);
+    test.find_distance();
+    int src_row = 0;
+    int src_col = 1;
+    test.find_distance_to_src(src_row, src_col);
+    test.direction = UP;
+    std::queue<Pair> result;
+    int dest_row = 2;
+    int dest_col = 0;
+    test.change_outgoing_cell(result, dest_row, dest_col);
+    std::cout << result.size() << '\n';
+    EXPECT_EQ(result.size(), 4);
+    std::cout << result.front().row_idx << " " << result.front().col_idx << '\n';
+    EXPECT_TRUE(result.front() == Pair(0, 1));
+    result.pop();
+    std::cout << result.front().row_idx << " " << result.front().col_idx << '\n';
+    EXPECT_TRUE(result.front() == Pair(0, 0));
+    result.pop();
+    std::cout << result.front().row_idx << " " << result.front().col_idx << '\n';
+    EXPECT_TRUE(result.front() == Pair(1, 0));
+    result.pop();
+    std::cout << result.front().row_idx << " " << result.front().col_idx << '\n';
     EXPECT_TRUE(result.front() == Pair(1, 1));
     result.pop();
 }
