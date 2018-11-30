@@ -2,6 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#define UNDEF 1
+#define UP 2
+#define DOWN 3
+#define LEFT 4
+#define RIGHT 5
 class Pair{
 public:
     Pair(const int & row, const int & col){
@@ -50,6 +55,7 @@ public:
         for (int i = 0; i < row; i++){
             map[i] = new Cell[column];
         }
+        direction = UNDEF;
 
     }
     void read_map(std::ifstream & input_file){
@@ -441,6 +447,70 @@ public:
     Pair *origin;
     Cell ** map;
     int battery;
-    int direction = UNDEF;
+    int direction;
 
 };
+
+int main(int argc, char** argv) {
+    int row, column, battery;
+    std::ifstream input_file;
+    std::ofstream output_file;
+    std::queue<Pair> result;
+    std::deque<Pair> tmp_result;
+    input_file.open("./" + std::string(argv[1]) + "/floor.data");
+    output_file.open("./" + std::string(argv[1]) + "/final.path");
+    input_file >> row;
+    input_file >> column;
+    input_file >> battery;
+    Map floor(row, column, battery);
+    floor.read_map(input_file);
+    floor.find_distance();
+    for (int i = 0; i < row; i ++){
+        for (int j = 0; j < column; j ++){
+            std::cout << i << " " << j << "\n";
+            if (floor.isValid(i, j) && floor.map[i][j].cleaned == false){
+                if (floor.direction == UNDEF){
+                    floor.shortest_path_to_origin(tmp_result, i, j);
+                    tmp_result.pop_front();
+                    while(!tmp_result.empty()){
+                        result.push(tmp_result.back());
+                        tmp_result.pop_back();
+                    }
+                    floor.shortest_path_to_origin(tmp_result, i, j);
+                    while(!tmp_result.empty()){
+                        result.push(tmp_result.front());
+                        tmp_result.pop_front();
+                    }
+                }
+                else{
+                    result.push(Pair(floor.origin->row_idx, floor.origin->col_idx));
+                    Pair src = floor.outgoing_cell();
+                    floor.find_distance_to_src(src.row_idx, src.col_idx);
+                    if (!floor.valid_dest(i, j)){
+                        std::cout << "enter\n";
+                        floor.change_outgoing_cell(result, i, j);
+                    }
+                    floor.shortest_path_to_dest(tmp_result, i, j);
+                    while (!tmp_result.empty()){
+                        result.push(tmp_result.back());
+                        tmp_result.pop_back();
+                    }
+                    floor.shortest_path_to_origin(tmp_result, i, j);
+                    while(!tmp_result.empty()){
+                        result.push(tmp_result.front());
+                        tmp_result.pop_front();
+                    }
+                }
+            }
+        }
+    }
+    result.push(Pair(floor.origin->row_idx, floor.origin->col_idx));
+    std::cout << "done\n";
+    std::cout << result.size() << '\n';
+    output_file << result.size() << '\n';
+    while(!result.empty()){
+        output_file << result.front().row_idx << " " << result.front().col_idx << '\n';
+        result.pop();
+    }
+    return 0;
+}
