@@ -311,7 +311,7 @@ TEST(Map, change_outgoing_cell){
     int dest_col = 0;
     test.change_outgoing_cell(result, dest_row, dest_col);
     std::cout << result.size() << '\n';
-    EXPECT_EQ(result.size(), 9);
+    EXPECT_EQ(result.size(), 8);
     EXPECT_TRUE(result.front() == Pair(0, 1));
     result.pop();
     EXPECT_TRUE(result.front() == Pair(0, 2));

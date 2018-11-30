@@ -164,7 +164,6 @@ public:
             bool found = false;
             Pair result_cell(-1, -1);
             if (isValid(cur_cell.row_idx - 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx - 1][cur_cell.col_idx].dest_distance == distance - 1){
-                std::cout << cur_cell.row_idx - 1 << " " << cur_cell.col_idx << "\n";
                 result_cell.row_idx = cur_cell.row_idx - 1;
                 result_cell.col_idx = cur_cell.col_idx;
                 if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
@@ -174,7 +173,7 @@ public:
                 }
             }
             if (isValid(cur_cell.row_idx + 1, cur_cell.col_idx) && !found && map[cur_cell.row_idx + 1][cur_cell.col_idx].dest_distance == distance - 1){
-                std::cout << "down " << cur_cell.row_idx + 1 << " " << cur_cell.col_idx << "\n";
+                // std::cout << "down " << cur_cell.row_idx + 1 << " " << cur_cell.col_idx << "\n";
                 result_cell.row_idx = cur_cell.row_idx + 1;
                 result_cell.col_idx = cur_cell.col_idx;
                 if (map[result_cell.row_idx][result_cell.col_idx].cleaned == false){
@@ -247,11 +246,11 @@ public:
         int cur_direction = direction;
         bool found = false;
         for (int i = 0; i < 3; i ++){
-            std::cout << direction << "\n";
+            //std::cout << direction << "\n";
             Pair new_src = rotate(true);
             rotate_result.push(new_src);
             if (new_src == Pair(-1, -1)){
-                std::cout << "done\n";
+                //std::cout << "done\n";
                 break;
             }
             find_distance_to_src(new_src.row_idx, new_src.col_idx);
@@ -264,24 +263,22 @@ public:
         //std::cout << rotate_result.size() << '\n';
         if (found){
             while(!rotate_result.empty()){
-                std::cout << direction << '\n';
-                //std::cout << "done\n";
                 std::deque<Pair> tmp_result;
                 Pair src = outgoing_cell();
-                //std::cout << "done\n";
                 find_distance_to_src(src.row_idx, src.col_idx);
-                //std::cout << "done\n";
-                std::cout << src.row_idx << " " <<src.col_idx << '\n';
-                std::cout << rotate_result.front().row_idx << " " << rotate_result.front().col_idx << '\n';
+                //std::cout << src.row_idx << " " <<src.col_idx << '\n';
+                //std::cout << rotate_result.front().row_idx << " " << rotate_result.front().col_idx << '\n';
                 shortest_path_to_dest(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                 while (!tmp_result.empty()){
-                    result.push(tmp_result.front());
-                    tmp_result.pop_front();
+                    std::cout << tmp_result.back().row_idx << " " <<tmp_result.back().col_idx << '\n';
+                    result.push(tmp_result.back());
+                    tmp_result.pop_back();
                 }
-                shortest_path_to_origin(tmp_result, dest_row, dest_col);
+                shortest_path_to_origin(tmp_result, rotate_result.front().row_idx, rotate_result.front().col_idx);
                 while (!tmp_result.empty()){
-                    result.push(tmp_result.front());
-                    tmp_result.pop_front();
+                    std::cout << tmp_result.back().row_idx << " " <<tmp_result.back().col_idx << '\n';
+                    result.push(tmp_result.back());
+                    tmp_result.pop_back();
                 }
                 result.push(Pair(origin->row_idx, origin->col_idx));
                 rotate_result.pop();
@@ -302,7 +299,6 @@ public:
                     break;
                 }
             }
-            std::cout << result.size() << '\n';
             if (found){
                 while(!rotate_result.empty()){
                     std::deque<Pair> tmp_result;
